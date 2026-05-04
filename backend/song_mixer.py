@@ -1,32 +1,53 @@
 import pygame
-from tinytag import TinyTag, Image
 from PIL import Image
+import wave
+from backend import queue_manager
+
 
 pygame.mixer.pre_init(48000, -16, 2, 512)
 pygame.mixer.init()
 
-queue = []
+old_pos_song = 0
 
-def load_queue():
-    pygame.mixer.music.load(queue[0])
-    pygame.mixer.music.play(0, 0.0)
-    interation = 0
-    for i in queue:
-        if interation == 0:
-            interation += 1
-        else:
-            pygame.mixer.music.queue(i)
-        interation += 1
+playing_now = ""
+
+is_paused = True
+
 
 def play_song(song_path):
-    if pygame.mixer.get_busy:
-        pygame.mixer.music.stop()
+    global is_paused
+    is_paused = False
+    global playing_now, old_pos_song
+    old_pos_song = 0
+    playing_now = song_path
     pygame.mixer.music.load(song_path)
-    pygame.mixer.music.set_volume(0.7)
     pygame.mixer.music.play(0, 0.0)
 
-def get_song_info(song_path):
-    file = song_path
-    tags: TinyTag = TinyTag.get(song_path, image=True)
-    return tags
+def get_song_time():
+    return (pygame.mixer.music.get_pos() + (old_pos_song * 1000)) / 1000
 
+def pause_song():
+    global is_paused
+    if is_paused == True:
+        pygame.mixer.music.unpause()
+        is_paused = False
+    else:
+        pygame.mixer.music.pause()
+        is_paused = True
+def change_time(value):
+    global old_pos_song
+    old_pos_song = value
+    if playing_now[-4:] == ".wav":
+        pygame.mixer.music.stop()
+        pygame.mixer.music.play(0, value)
+
+def get_song_length():
+    duration = 0.0
+    try:
+        with wave.open(playing_now, "rb") as f:
+            frames = f.getnframes()
+            rate = f.getframerate()
+            duration = (frames / float(rate))
+    except Exception as e:
+        print("Deu erro aqui.")
+    return duration
