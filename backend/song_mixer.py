@@ -2,6 +2,7 @@ import pygame
 from PIL import Image
 import wave
 from backend import queue_manager
+import datetime
 
 
 pygame.mixer.pre_init(48000, -16, 2, 512)
@@ -13,6 +14,11 @@ playing_now = ""
 
 is_paused = True
 
+def get_pygame_busy_state():
+    return pygame.mixer.music.get_busy()
+
+def convert_seconds_to_minutes(value):
+    return f"{datetime.timedelta(seconds=round(value))}"
 
 def play_song(song_path):
     global is_paused

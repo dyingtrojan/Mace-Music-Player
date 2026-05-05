@@ -17,7 +17,6 @@ app.title("Mace Music Player")
 
 app.grid_columnconfigure(0, weight=1)
 
-
 songList = ctk.CTkScrollableFrame(app, fg_color="#1f1f1f")
 songList.grid(column=0, sticky="nesw", rowspan=100)
 
@@ -50,7 +49,6 @@ music_dir = tk.Menu(menuBar, tearoff=0)
 menuBar.add_cascade(label="File", menu=music_dir)
 music_dir.add_command(label="Open", command=choose_dir)
 
-
 playBtn_icon = ctk.CTkImage(Image.open("assets/play.png"), size=(16,16))
 
 albumCoverImage = ctk.CTkImage(Image.open("assets/no-cover.png"),size=(150,150))
@@ -64,17 +62,43 @@ songTitleLabel.grid(row=1, column=1, pady=20, padx=20)
 albumTitleLabel = ctk.CTkLabel(app, text="Album Name")
 albumTitleLabel.grid(row=2, column=1, pady=20, padx=20)
 
-time_slider = ctk.CTkSlider(app, width=500)
-time_slider.grid(row=4, column=1)
+slider_time = ctk.DoubleVar(value=song_mixer.get_song_time())
+
+buttons_frame = ctk.CTkFrame(app, fg_color="transparent")
+buttons_frame.grid(row=3, column=1, pady=20, padx=20)
+
+slider_frame = ctk.CTkFrame(app, fg_color="transparent")
+slider_frame.grid(row=4, column=1, pady=20, padx=20)
+
+back_btn = ctk.CTkButton(buttons_frame, text="Back", command=lambda: last_song())
+back_btn.grid(row=0, column=0, pady=20, padx=20)
+
+play_btn = ctk.CTkButton(buttons_frame, text="", image=playBtn_icon, command=song_mixer.pause_song)
+play_btn.grid(row=0, column=1, pady=20, padx=20)
+
+next_btn = ctk.CTkButton(buttons_frame, text="Next", command=lambda: next_song())
+next_btn.grid(row=0, column=2, pady=20, padx=20)
+
+song_left = ctk.CTkLabel(slider_frame, text="0:00")
+song_left.grid(row=0, column=0)
+
+time_slider = ctk.CTkSlider(slider_frame, width=420)
+time_slider.grid(row=0, column=1)
+
+song_total = ctk.CTkLabel(slider_frame, text="0:00")
+song_total.grid(row=0, column=2)
 
 def next_song():
+    if queue_manager.index_song > len(queue_manager.queue):
+        queue_manager.index_song = -1 
     queue_manager.next_song()
     change_ui_song(queue_manager.queue[queue_manager.index_song])
+
 
 def last_song():
     queue_manager.last_song()
     change_ui_song(queue_manager.queue[queue_manager.index_song])
-    
+
 def change_ui_song(song):
     tags = metadata_manager.get_song_info(song)
     
@@ -83,31 +107,26 @@ def change_ui_song(song):
     albumCover = Image.open(io.BytesIO(tags.images.front_cover.data))
     albumCoverCtk = ctk.CTkImage(albumCover, albumCover, size=(150,150))
     albumCoverLabel.configure(app, text="", image=albumCoverCtk)
+    song_total.configure(slider_frame, text=song_mixer.convert_seconds_to_minutes(song_mixer.get_song_length()))
     time_slider.configure(app, from_=0, to=song_mixer.get_song_length(), variable=slider_time, command=song_mixer.change_time)
+    
     change_slider()
-slider_time = ctk.DoubleVar(value=song_mixer.get_song_time())
+
+def check_song_end():
+    if song_mixer.is_paused != True:
+        if song_mixer.get_pygame_busy_state() == False and song_mixer.playing_now != "":
+            next_song()
 
 def change_slider():
     slider_time.set(song_mixer.get_song_time())
+    song_left.configure(slider_frame, text=song_mixer.convert_seconds_to_minutes(song_mixer.get_song_time()))
+    check_song_end()
     app.after(500, change_slider)
 
 def start_song(song_file):
-    
     song_mixer.play_song(song_file)
     queue_manager.index_song = queue_manager.queue.index(song_file)
     change_ui_song(song_file)
-
-buttons_frame = ctk.CTkFrame(app, fg_color="transparent")
-buttons_frame.grid(row=3, column=1, pady=20, padx=20)
-
-back_btn = ctk.CTkButton(buttons_frame, text="Back", command=lambda: last_song())
-back_btn.grid(row=0, column=0, pady=20, padx=20)
-
-play_btn = ctk.CTkButton(buttons_frame, text="", image=playBtn_icon, command=lambda: song_mixer.pause_song())
-play_btn.grid(row=0, column=1, pady=20, padx=20)
-
-next_btn = ctk.CTkButton(buttons_frame, text="Next", command=lambda: next_song())
-next_btn.grid(row=0, column=2, pady=20, padx=20)
 
 change_slider()
 
