@@ -1,5 +1,4 @@
 # Mace Music Player
----
 A simple music player made in Python, can run only .wav files (for now.)
 ## How to install the source code:
 First, make sure you have Pygame, Pillow and TinyTag on your machine. If not, run this command.

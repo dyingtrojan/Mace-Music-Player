@@ -50,6 +50,8 @@ menuBar.add_cascade(label="File", menu=music_dir)
 music_dir.add_command(label="Open", command=choose_dir)
 
 playBtn_icon = ctk.CTkImage(Image.open("assets/play.png"), size=(16,16))
+nextBtn_icon = ctk.CTkImage(Image.open("assets/forward_icon.png"), size=(16,16))
+backBtn_icon = ctk.CTkImage(Image.open("assets/backward_icon.png"), size=(16,16))
 
 albumCoverImage = ctk.CTkImage(Image.open("assets/no-cover.png"),size=(150,150))
 
@@ -70,13 +72,13 @@ buttons_frame.grid(row=3, column=1, pady=20, padx=20)
 slider_frame = ctk.CTkFrame(app, fg_color="transparent")
 slider_frame.grid(row=4, column=1, pady=20, padx=20)
 
-back_btn = ctk.CTkButton(buttons_frame, text="Back", command=lambda: last_song())
+back_btn = ctk.CTkButton(buttons_frame, text="", image=backBtn_icon, command=lambda: last_song())
 back_btn.grid(row=0, column=0, pady=20, padx=20)
 
 play_btn = ctk.CTkButton(buttons_frame, text="", image=playBtn_icon, command=song_mixer.pause_song)
 play_btn.grid(row=0, column=1, pady=20, padx=20)
 
-next_btn = ctk.CTkButton(buttons_frame, text="Next", command=lambda: next_song())
+next_btn = ctk.CTkButton(buttons_frame, text="", image=nextBtn_icon, command=lambda: next_song())
 next_btn.grid(row=0, column=2, pady=20, padx=20)
 
 song_left = ctk.CTkLabel(slider_frame, text="0:00")
@@ -89,7 +91,7 @@ song_total = ctk.CTkLabel(slider_frame, text="0:00")
 song_total.grid(row=0, column=2)
 
 def next_song():
-    if queue_manager.index_song > len(queue_manager.queue):
+    if queue_manager.index_song >= len(queue_manager.queue) - 1:
         queue_manager.index_song = -1 
     queue_manager.next_song()
     change_ui_song(queue_manager.queue[queue_manager.index_song])
