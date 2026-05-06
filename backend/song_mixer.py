@@ -34,12 +34,13 @@ def get_song_time():
 
 def pause_song():
     global is_paused
-    if is_paused == True:
-        pygame.mixer.music.unpause()
-        is_paused = False
-    else:
-        pygame.mixer.music.pause()
-        is_paused = True
+    if playing_now != "":
+        if is_paused == True:
+            pygame.mixer.music.unpause()
+            is_paused = False
+        else:
+            pygame.mixer.music.pause()
+            is_paused = True
 def change_time(value):
     global old_pos_song
     old_pos_song = value
